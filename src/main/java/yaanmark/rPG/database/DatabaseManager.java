@@ -36,6 +36,10 @@ public class DatabaseManager {
 
             connection = DriverManager.getConnection(url);
 
+            plugin.getLogger().info(
+                    "Banco utilizado: " + databaseFile.getAbsolutePath()
+            );
+
             createTables();
 
             plugin.getLogger().info("Banco SQLite conectado com sucesso!");
@@ -48,16 +52,17 @@ public class DatabaseManager {
         }
     }
 
+
     private void createTables() throws SQLException {
         String sql = """
-            CREATE TABLE IF NOT EXISTS player_attributes (
-                uuid TEXT PRIMARY KEY,
-                strength INTEGER NOT NULL DEFAULT 10,
-                dexterity INTEGER NOT NULL DEFAULT 10,
-                intelligence INTEGER NOT NULL DEFAULT 10,
-                vitality INTEGER NOT NULL DEFAULT 10
-            )
-            """;
+        CREATE TABLE IF NOT EXISTS player_attributes (
+            uuid TEXT PRIMARY KEY,
+            strength INTEGER NOT NULL DEFAULT 10,
+            dexterity INTEGER NOT NULL DEFAULT 10,
+            intelligence INTEGER NOT NULL DEFAULT 10,
+            vitality INTEGER NOT NULL DEFAULT 10
+        )
+        """;
 
         try (Statement statement = connection.createStatement()) {
             statement.execute(sql);
@@ -75,7 +80,7 @@ public class DatabaseManager {
 
         addColumnIfMissing(
                 "attribute_points",
-                "INTEGER NOT NULL DEFAULT 0"
+                "ALTER TABLE player_attributes ADD COLUMN attribute_points INTEGER NOT NULL DEFAULT 0"
         );
     }
 
@@ -100,7 +105,8 @@ public class DatabaseManager {
     }
     public PlayerAttributes loadAttributes(UUID uuid) {
         String sql = """
-            SELECT strength, dexterity, intelligence, vitality
+            SELECT strength, dexterity, intelligence, vitality,
+                   level, experience, attribute_points
             FROM player_attributes
             WHERE uuid = ?
             """;
@@ -134,20 +140,22 @@ public class DatabaseManager {
         }
     }
 
+
     public void saveAttributes(UUID uuid, PlayerAttributes attributes) {
         String sql = """
         INSERT INTO player_attributes
-            (uuid, strength, dexterity, intelligence, vitality, level, experience)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+            (uuid, strength, dexterity, intelligence, vitality,
+             level, experience, attribute_points)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(uuid) DO UPDATE SET
             strength = excluded.strength,
             dexterity = excluded.dexterity,
             intelligence = excluded.intelligence,
             vitality = excluded.vitality,
             level = excluded.level,
-            experience = excluded.experience
+            experience = excluded.experience,
+            attribute_points = excluded.attribute_points
         """;
-
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, uuid.toString());
@@ -162,7 +170,9 @@ public class DatabaseManager {
             statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao salvar atributos do jogador.", e);
+            throw new RuntimeException(
+                    "Erro ao salvar atributos do jogador.", e
+            );
         }
     }
 
@@ -181,6 +191,10 @@ public class DatabaseManager {
                 }
             }
         }
+
+        plugin.getLogger().info(
+                "Coluna '" + columnName + "' existe: " + columnExists
+        );
 
         if (!columnExists) {
             try (Statement statement = connection.createStatement()) {

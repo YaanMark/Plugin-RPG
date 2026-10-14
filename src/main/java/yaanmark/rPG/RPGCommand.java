@@ -24,6 +24,95 @@ public class RPGCommand implements CommandExecutor {
             return true;
         }
         switch (args[0].toLowerCase()) {
+            case "upar":
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(
+                            "§cEste comando só pode ser usado por um jogador."
+                    );
+                    return true;
+                }
+
+                Player player = (Player) sender;
+
+                if (args.length != 3) {
+                    player.sendMessage(
+                            "§eUso: /rpg upar <atributo> <quantidade>"
+                    );
+                    player.sendMessage(
+                            "§7Atributos: forca, destreza, inteligencia, vitalidade"
+                    );
+                    return true;
+                }
+
+                int quantity;
+
+                try {
+                    quantity = Integer.parseInt(args[2]);
+                } catch (NumberFormatException e) {
+                    player.sendMessage(
+                            "§cA quantidade deve ser um número inteiro."
+                    );
+                    return true;
+                }
+
+                if (quantity <= 0) {
+                    player.sendMessage(
+                            "§cA quantidade deve ser maior que zero."
+                    );
+                    return true;
+                }
+
+                PlayerAttributes playerAttributes =
+                        playerDataManager.getAttributes(player);
+
+                String attribute = args[1].toLowerCase()
+                        .replace("ç", "c")
+                        .replace("ã", "a");
+
+                long cost = playerAttributes.getAttributeUpgradeCost(
+                        attribute, quantity
+                );
+
+                if (cost < 0) {
+                    player.sendMessage(
+                            "§cAtributo inválido. Use forca, destreza, inteligencia ou vitalidade."
+                    );
+                    return true;
+                }
+
+                if (cost > playerAttributes.getAttributePoints()) {
+                    player.sendMessage(
+                            "§cPontos insuficientes! Custo: " + cost
+                                    + " | Disponíveis: "
+                                    + playerAttributes.getAttributePoints()
+                    );
+                    return true;
+                }
+
+                if (!playerAttributes.spendAttributePoints(attribute, quantity)) {
+                    player.sendMessage(
+                            "§cNão foi possível realizar a melhoria."
+                    );
+                    return true;
+                }
+
+                playerDataManager.saveAttributes(player);
+
+                player.sendMessage(
+                        "§aAtributo melhorado com sucesso!"
+                );
+                player.sendMessage(
+                        "§eAtributo: §f" + attribute
+                                + " §7| §eAumentado em: §f+" + quantity
+                );
+                player.sendMessage(
+                        "§eCusto: §f" + cost
+                                + " §7| §ePontos restantes: §f"
+                                + playerAttributes.getAttributePoints()
+                );
+
+                return true;
+
             case "xp":
                 if (!sender.hasPermission("rpg.admin")) {
                     sender.sendMessage("§cVocê não tem permissão para isso.");
@@ -160,6 +249,7 @@ public class RPGCommand implements CommandExecutor {
                 sender.sendMessage("§9Inteligência: §f" + attributes.getIntelligence());
                 sender.sendMessage("§eVitalidade: §f" + attributes.getVitality());
                 sender.sendMessage("§6Nível: §f" + attributes.getLevel());
+                sender.sendMessage("§ePontos de atributo: §f" + attributes.getAttributePoints());
 
                 sender.sendMessage(
                         "§6Experiência: §f"
@@ -176,6 +266,7 @@ public class RPGCommand implements CommandExecutor {
                 sender.sendMessage("§e/rpg status §7- Mostra seus atributos");
                 sender.sendMessage("§e/rpg ajuda §7- Mostra esta ajuda");
                 sender.sendMessage("§e/rpg xp <jogador> <quantidade> §7- Concede XP");
+                sender.sendMessage("§e/rpg upar <atributo> <quantidade> §7- Evolui um atributo");
                 return true;
 
             default:

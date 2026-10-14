@@ -84,4 +84,128 @@ public class PlayerAttributes {
         return levelsGained;
     }
 
+
+    public boolean spendAttributePoints(String attribute, int amount) {
+        if (amount <= 0) {
+            return false;
+        }
+
+        String normalizedAttribute = attribute.toLowerCase()
+                .replace("ç", "c")
+                .replace("ã", "a");
+
+        int currentValue;
+
+        switch (normalizedAttribute) {
+            case "forca":
+            case "strength":
+                currentValue = strength;
+                break;
+
+            case "destreza":
+            case "dexterity":
+                currentValue = dexterity;
+                break;
+
+            case "inteligencia":
+            case "intelligence":
+                currentValue = intelligence;
+                break;
+
+            case "vitalidade":
+            case "vitality":
+                currentValue = vitality;
+                break;
+
+            default:
+                return false;
+        }
+
+        long totalCost = 0;
+
+        for (int i = 0; i < amount; i++) {
+            long difference = (long) currentValue + i - 9;
+            long cost = (difference * difference + 9) / 10;
+            totalCost += cost;
+
+            if (totalCost > attributePoints) {
+                return false;
+            }
+        }
+
+        switch (normalizedAttribute) {
+            case "forca":
+            case "strength":
+                strength += amount;
+                break;
+
+            case "destreza":
+            case "dexterity":
+                dexterity += amount;
+                break;
+
+            case "inteligencia":
+            case "intelligence":
+                intelligence += amount;
+                break;
+
+            case "vitalidade":
+            case "vitality":
+                vitality += amount;
+                break;
+        }
+
+        attributePoints -= (int) totalCost;
+        return true;
+    }
+
+
+    public long getAttributeUpgradeCost(String attribute, int amount) {
+        if (amount <= 0) {
+            return -1;
+        }
+
+        String normalized = attribute.toLowerCase()
+                .replace("ç", "c")
+                .replace("ã", "a");
+
+        int currentValue;
+
+        switch (normalized) {
+            case "forca":
+            case "strength":
+                currentValue = strength;
+                break;
+            case "destreza":
+            case "dexterity":
+                currentValue = dexterity;
+                break;
+            case "inteligencia":
+            case "intelligence":
+                currentValue = intelligence;
+                break;
+            case "vitalidade":
+            case "vitality":
+                currentValue = vitality;
+                break;
+            default:
+                return -1;
+        }
+
+        long totalCost = 0;
+
+        for (int i = 0; i < amount; i++) {
+            long difference = (long) currentValue + i - 9;
+            long cost = (difference * difference + 9) / 10;
+
+            totalCost += cost;
+
+            if (totalCost > attributePoints) {
+                return totalCost;
+            }
+        }
+
+        return totalCost;
+    }
+
 }
