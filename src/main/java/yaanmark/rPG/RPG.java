@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import yaanmark.rPG.manager.PlayerDataManager;
 import yaanmark.rPG.database.*;
+import yaanmark.rPG.combat.CombatManager;
 
 public final class RPG extends JavaPlugin {
 
@@ -17,6 +18,7 @@ public final class RPG extends JavaPlugin {
         databaseManager.connect();
 
         playerDataManager = new PlayerDataManager(databaseManager);
+        getServer().getPluginManager().registerEvents(new CombatManager(playerDataManager), this);
         getCommand("rpg").setExecutor(new RPGCommand(playerDataManager));
         Bukkit.getPluginManager().registerEvents(new Events(playerDataManager), this);
         getLogger().info("O Plugin RPG foi iniciado!");
