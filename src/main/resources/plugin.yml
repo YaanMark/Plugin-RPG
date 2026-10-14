@@ -1,0 +1,16 @@
+name: RPG
+version: '${version}'
+
+main: yaanmark.rPG.RPG
+api-version: '26.1'
+
+commands:
+  rpg:
+    description: Comando principal do RPG Foundation.
+    usage: /rpg [status|ajuda]
+
+
+permissions:
+  rpg.admin:
+    description: Permite administrar os atributos do RPG.
+    default: op
