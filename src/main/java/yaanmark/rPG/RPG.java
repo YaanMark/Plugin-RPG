@@ -5,6 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import yaanmark.rPG.manager.PlayerDataManager;
 import yaanmark.rPG.database.*;
 import yaanmark.rPG.combat.CombatManager;
+import yaanmark.rPG.combat.VitalityManager;
 
 public final class RPG extends JavaPlugin {
 

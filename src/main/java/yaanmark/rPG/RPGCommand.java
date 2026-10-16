@@ -4,13 +4,15 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.Bukkit;
 import yaanmark.rPG.manager.PlayerDataManager;
 import yaanmark.rPG.player.PlayerAttributes;
-import org.bukkit.Bukkit;
+import yaanmark.rPG.combat.VitalityManager;
 
 public class RPGCommand implements CommandExecutor {
 
     private final PlayerDataManager playerDataManager;
+    private final VitalityManager vitalityManager = new VitalityManager();
 
     public RPGCommand(PlayerDataManager playerDataManager) {
         this.playerDataManager = playerDataManager;
@@ -97,6 +99,11 @@ public class RPGCommand implements CommandExecutor {
                 }
 
                 playerDataManager.saveAttributes(player);
+
+                if (attribute.equals("vitalidade")
+                        || attribute.equals("vitality")) {
+                    vitalityManager.updateMaxHealth(player, playerAttributes);
+                }
 
                 player.sendMessage(
                         "§aAtributo melhorado com sucesso!"
