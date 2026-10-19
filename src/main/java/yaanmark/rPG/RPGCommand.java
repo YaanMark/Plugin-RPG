@@ -208,24 +208,34 @@ public class RPGCommand implements CommandExecutor {
                     return true;
                 }
 
+
                 PlayerAttributes targetAttributes =
                         playerDataManager.getAttributes(target);
 
-                switch (args[2].toLowerCase()) {
+                String attributeToSet = args[2].toLowerCase()
+                        .replace("ç", "c")
+                        .replace("ã", "a");
+
+                switch (attributeToSet) {
                     case "forca":
+                    case "strength":
                         targetAttributes.setStrength(value);
                         break;
 
                     case "destreza":
+                    case "dexterity":
                         targetAttributes.setDexterity(value);
                         break;
 
                     case "inteligencia":
+                    case "intelligence":
                         targetAttributes.setIntelligence(value);
                         break;
 
                     case "vitalidade":
+                    case "vitality":
                         targetAttributes.setVitality(value);
+                        vitalityManager.updateMaxHealth(target, targetAttributes);
                         break;
 
                     default:
@@ -235,12 +245,19 @@ public class RPGCommand implements CommandExecutor {
                         return true;
                 }
 
+                playerDataManager.saveAttributes(target);
+
                 sender.sendMessage(
                         "§aAtributo atualizado para " + target.getName() + "!"
                 );
 
-                target.sendMessage("§eUm dos seus atributos foi atualizado.");
+                target.sendMessage(
+                        "§eUm dos seus atributos foi atualizado."
+                );
+
                 return true;
+
+
 
             case "status":
                 if (!(sender instanceof Player)) {
