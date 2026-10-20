@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import yaanmark.rPG.manager.PlayerDataManager;
 import yaanmark.rPG.player.PlayerAttributes;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class CombatManager implements Listener {
 
@@ -19,24 +20,54 @@ public class CombatManager implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onPlayerAttack(EntityDamageByEntityEvent event) {
+    public void onEntityDamage(EntityDamageByEntityEvent event) {
 
         Entity attacker = event.getDamager();
+        Entity target = event.getEntity();
 
-        // Por enquanto, somente ataques diretos de jogadores.
-        if (!(attacker instanceof Player)) {
+        if (attacker instanceof Player) {
+            Player player = (Player) attacker;
+
+            PlayerAttributes attackerAttributes =
+                    playerDataManager.getAttributes(player);
+
+            int strength = attackerAttributes.getStrength();
+
+            double bonus = Math.max(0, (strength - 10) * 0.5);
+
+            event.setDamage(event.getDamage() + bonus);
+        }
+
+        if (!(target instanceof Player)) {
             return;
         }
 
-        Player player = (Player) attacker;
+        Player defender = (Player) target;
 
-        PlayerAttributes attributes =
-                playerDataManager.getAttributes(player);
+        PlayerAttributes defenderAttributes =
+                playerDataManager.getAttributes(defender);
 
-        int strength = attributes.getStrength();
+        int dexterity = defenderAttributes.getDexterity();
 
-        double bonus = Math.max(0, (strength - 10) * 0.5);
+        double dodgeChance = Math.min(
+                100.0,
+                Math.max(0.0, dexterity * 0.5)
+        );
 
-        event.setDamage(event.getDamage() + bonus);
+        double roll = ThreadLocalRandom.current().nextDouble(100.0);
+
+        if (roll < dodgeChance) {
+            event.setCancelled(true);
+
+            defender.sendMessage(
+                    "§a§lESQUIVA! §7Você evitou o ataque."
+            );
+
+            if (attacker instanceof Player) {
+                ((Player) attacker).sendMessage(
+                        "§c§lATAQUE ESQUIVADO! §7Seu adversário evitou o golpe."
+                );
+            }
+        }
     }
 }
